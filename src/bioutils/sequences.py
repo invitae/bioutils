@@ -537,7 +537,8 @@ def translate_cds(
             which codon to amino acid translation table to use.
             By default we will use the standard translation table for humans. To enable translation for selenoproteins,
             the TranslationTable.selenocysteine table can get used
-        exception_map (Dict[int, str], optional): A dictionary of start codon position with exception override protein
+        exception_map (Dict[int, str], optional): A dictionary of start codon position with exception override
+            amino acid
 
     Returns:
         str: The corresponding single letter amino acid sequence.
