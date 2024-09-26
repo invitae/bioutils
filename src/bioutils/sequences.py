@@ -518,7 +518,9 @@ class TranslationTable(StrEnum):
     vertebrate_mitochondrial = "vmito"
 
 
-def translate_cds(seq, full_codons=True, ter_symbol="*", translation_table=TranslationTable.standard):
+def translate_cds(
+    seq, full_codons=True, ter_symbol="*", translation_table=TranslationTable.standard, exception_map=None
+):
     """Translates a DNA or RNA sequence into a single-letter amino acid sequence.
 
     Args:
@@ -535,6 +537,7 @@ def translate_cds(seq, full_codons=True, ter_symbol="*", translation_table=Trans
             which codon to amino acid translation table to use.
             By default we will use the standard translation table for humans. To enable translation for selenoproteins,
             the TranslationTable.selenocysteine table can get used
+        exception_map (Dict[int, str], optional): A dictionary of start codon position with exception override protein
 
     Returns:
         str: The corresponding single letter amino acid sequence.
@@ -612,12 +615,20 @@ def translate_cds(seq, full_codons=True, ter_symbol="*", translation_table=Trans
         raise ValueError("Unsupported translation table {}".format(translation_table))
     seq = replace_u_to_t(seq)
     seq = seq.upper()
+    seq_len = len(seq)
+    partial_term_codon_start = None
+    if seq_len % 3 != 0:
+        partial_term_codon_start = seq_len - (seq_len % 3)
 
     protein_seq = []
-    for i in range(0, len(seq) - len(seq) % 3, 3):
+    for i in range(0, partial_term_codon_start or seq_len, 3):
         codon = seq[i : i + 3]
         try:
-            aa = trans_table[codon]
+            if exception_map and i in exception_map:
+                # Override the expected amino acid with the exception
+                aa = exception_map[i]
+            else:
+                aa = trans_table[codon]
         except KeyError:
             # if this contains an ambiguous code, set aa to X, otherwise, throw error
             iupac_ambiguity_codes = "BDHVNUWSMKRYZ"
@@ -627,9 +638,13 @@ def translate_cds(seq, full_codons=True, ter_symbol="*", translation_table=Trans
                 raise ValueError("Codon {} at position {}..{} is undefined in codon table".format(codon, i + 1, i + 3))
         protein_seq.append(aa)
 
-    # check for trailing bases and add the ter symbol if required
-    if not full_codons and len(seq) % 3 != 0:
-        protein_seq.append(ter_symbol)
+    if partial_term_codon_start:
+        if exception_map and partial_term_codon_start in exception_map:
+            # If the length is not a multiple of 3 and the last codon is an exception, add the exception
+            protein_seq.append(exception_map[partial_term_codon_start])
+        elif not full_codons:
+            # check for trailing bases and add the ter symbol if required
+            protein_seq.append(ter_symbol)
 
     return "".join(protein_seq)
 
