@@ -59,3 +59,18 @@ def test_translate_vertebrate_mitochondrial():
 
     with pytest.raises(ValueError):
         translate_cds("ATAAG", translation_table=TranslationTable.vertebrate_mitochondrial)
+
+
+@pytest.mark.parametrize(
+    "sequence, exception_map, translated_sequence",
+    (
+        ("ATGATGATG", {3: "U"}, "MUM"),
+        ("ATGATGATG", {3: "U", 6: "U"}, "MUU"),
+        ("ATGATGATG", {6: "*"}, "MM*"),
+        ("ATGATGAT", {6: "*"}, "MM*"),
+        ("ATGACTATG", {}, "MTM"),
+        ("ATGACTATG", None, "MTM"),
+    ),
+)
+def test_translate_cds_w_exceptions(sequence, exception_map, translated_sequence):
+    assert translate_cds(sequence, full_codons=False, ter_symbol="", exception_map=exception_map) == translated_sequence
