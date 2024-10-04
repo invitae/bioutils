@@ -87,5 +87,13 @@ def test_translate_cds_w_exceptions(sequence, exception_map, translated_sequence
     ),
 )
 def test_translate_cds_mito_alts(sequence, translation_table, starts_at_first_codon, translated_sequence):
-    assert translate_cds(sequence, full_codons=False, ter_symbol="", translation_table=translation_table,
-                         starts_at_first_codon=starts_at_first_codon) == translated_sequence
+    assert (
+        translate_cds(
+            sequence,
+            full_codons=False,
+            ter_symbol="",
+            translation_table=translation_table,
+            starts_at_first_codon=starts_at_first_codon,
+        )
+        == translated_sequence
+    )
