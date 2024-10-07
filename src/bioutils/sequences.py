@@ -229,6 +229,10 @@ dna_to_aa1_vmito["AGG"] = "*"
 dna_to_aa1_vmito["ATA"] = "M"
 dna_to_aa1_vmito["TGA"] = "W"
 
+# Alternative start codons that are only applied if the starts_at_first_codon flag is set to True.
+# NOTE: That this alt codon table is for human species only, other species are not supported yet.
+alt_init_codons_vmito = {"ATT": "M"}
+
 
 complement_transtable = bytes.maketrans(b"ACGT", b"TGCA")
 
@@ -519,8 +523,13 @@ class TranslationTable(StrEnum):
 
 
 def translate_cds(
-    seq, full_codons=True, ter_symbol="*", translation_table=TranslationTable.standard, exception_map=None
-):
+    seq: str,
+    full_codons: bool = True,
+    ter_symbol: str = "*",
+    translation_table: TranslationTable = TranslationTable.standard,
+    exception_map: dict[int, str] | None = None,
+    starts_at_first_codon: bool = False,
+) -> str | None:
     """Translates a DNA or RNA sequence into a single-letter amino acid sequence.
 
     Args:
@@ -538,7 +547,11 @@ def translate_cds(
             By default we will use the standard translation table for humans. To enable translation for selenoproteins,
             the TranslationTable.selenocysteine table can get used
         exception_map (Dict[int, str], optional): A dictionary of start codon position with exception override
-            amino acid
+            amino acid.
+            Defaults to ``None``.
+        starts_at_first_codon (bool, optional): If ``True``, alternate start codons will be considered during
+            translation.
+            Defaults to ``False``.
 
     Returns:
         str: The corresponding single letter amino acid sequence.
@@ -596,7 +609,6 @@ def translate_cds(
         ...
         ValueError: Codon CGQ at position 4..6 is undefined in codon table
     """
-
     if seq is None:
         return None
 
@@ -606,12 +618,14 @@ def translate_cds(
     if full_codons and len(seq) % 3 != 0:
         raise ValueError("Sequence length must be a multiple of three")
 
+    alt_init_codons = {}
     if translation_table == TranslationTable.standard:
         trans_table = dna_to_aa1_lut
     elif translation_table == TranslationTable.selenocysteine:
         trans_table = dna_to_aa1_sec
     elif translation_table == TranslationTable.vertebrate_mitochondrial:
         trans_table = dna_to_aa1_vmito
+        alt_init_codons = alt_init_codons_vmito
     else:
         raise ValueError("Unsupported translation table {}".format(translation_table))
     seq = replace_u_to_t(seq)
@@ -629,7 +643,10 @@ def translate_cds(
                 # Override the expected amino acid with the exception
                 aa = exception_map[i]
             else:
-                aa = trans_table[codon]
+                if starts_at_first_codon and i == 0 and codon in alt_init_codons:
+                    aa = alt_init_codons[codon]
+                else:
+                    aa = trans_table[codon]
         except KeyError:
             # if this contains an ambiguous code, set aa to X, otherwise, throw error
             iupac_ambiguity_codes = "BDHVNUWSMKRYZ"
