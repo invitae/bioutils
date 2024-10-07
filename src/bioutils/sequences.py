@@ -229,7 +229,8 @@ dna_to_aa1_vmito["AGG"] = "*"
 dna_to_aa1_vmito["ATA"] = "M"
 dna_to_aa1_vmito["TGA"] = "W"
 
-# Alternative start codons that are only applied if the starts_at_first_codon flag is set to True
+# Alternative start codons that are only applied if the starts_at_first_codon flag is set to True.
+# NOTE: That this alt codon table is for human species only, other species are not supported yet.
 alt_init_codons_vmito = {"ATT": "M"}
 
 
