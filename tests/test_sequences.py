@@ -97,3 +97,26 @@ def test_translate_cds_mito_alts(sequence, translation_table, starts_at_first_co
         )
         == translated_sequence
     )
+
+
+@pytest.mark.parametrize(
+    "sequence, translated_sequence",
+    (
+        ("ATTATTA", "II*"),
+        ("ATTATT", "II"),
+        ("ATTAT", "I*"),
+        ("ATTA", "I*"),
+        ("GG", "*"),
+        ("G", "*"),
+    ),
+)
+def test_translate_cds_full_codons_false(sequence, translated_sequence):
+    assert (translate_cds(sequence, full_codons=False) == translated_sequence)
+
+
+def test_translate_cds_full_codons_true():
+    assert (translate_cds("TTT", full_codons=True) == "F")
+
+    with pytest.raises(ValueError):
+        translate_cds("TT", full_codons=True)
+        translate_cds("TTAAA", full_codons=True)
