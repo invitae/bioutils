@@ -635,9 +635,11 @@ def translate_cds(
     if seq_len % 3 != 0:
         # Loop until right before the last partial codon
         end_position = seq_len - (seq_len % 3)
+        has_full_codons = False
     else:
         # Loop through the entire sequence since it's a multiple of 3
         end_position = seq_len
+        has_full_codons = True
 
     protein_seq = []
     for i in range(0, end_position, 3):
@@ -660,12 +662,13 @@ def translate_cds(
                 raise ValueError("Codon {} at position {}..{} is undefined in codon table".format(codon, i + 1, i + 3))
         protein_seq.append(aa)
 
-    if exception_map and end_position in exception_map:
-        # If the length is not a multiple of 3 and the last codon is an exception, add the exception
-        protein_seq.append(exception_map[end_position])
-    elif not full_codons and seq_len % 3 != 0:
-        # check for trailing bases and add the ter symbol if required
-        protein_seq.append(ter_symbol)
+    if has_full_codons is False:
+        if exception_map and end_position in exception_map:
+            # If the length is not a multiple of 3 and the last codon is an exception, add the exception
+            protein_seq.append(exception_map[end_position])
+        elif not full_codons:
+            # check for trailing bases and add the ter symbol if required
+            protein_seq.append(ter_symbol)
 
     return "".join(protein_seq)
 
