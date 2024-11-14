@@ -662,7 +662,7 @@ def translate_cds(
                 raise ValueError("Codon {} at position {}..{} is undefined in codon table".format(codon, i + 1, i + 3))
         protein_seq.append(aa)
 
-    if has_full_codons is False:
+    if not has_full_codons:
         if exception_map and end_position in exception_map:
             # If the length is not a multiple of 3 and the last codon is an exception, add the exception
             protein_seq.append(exception_map[end_position])

@@ -119,4 +119,3 @@ def test_translate_cds_full_codons_true():
 
     with pytest.raises(ValueError):
         translate_cds("TT", full_codons=True)
-        translate_cds("TTAAA", full_codons=True)
