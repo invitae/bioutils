@@ -231,6 +231,7 @@ dna_to_aa1_vmito["TGA"] = "W"
 
 # Alternative start codons that are only applied if the starts_at_first_codon flag is set to True.
 # NOTE: That this alt codon table is for human species only, other species are not supported yet.
+alt_init_codons_human_nuclear = {"CTG": "M", "TTG": "M"}
 alt_init_codons_vmito = {"ATT": "M"}
 
 
@@ -621,6 +622,7 @@ def translate_cds(
     alt_init_codons = {}
     if translation_table == TranslationTable.standard:
         trans_table = dna_to_aa1_lut
+        alt_init_codons = alt_init_codons_human_nuclear
     elif translation_table == TranslationTable.selenocysteine:
         trans_table = dna_to_aa1_sec
     elif translation_table == TranslationTable.vertebrate_mitochondrial:
