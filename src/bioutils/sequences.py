@@ -5,6 +5,7 @@ import logging
 import re
 from enum import Enum
 from string import ascii_lowercase
+from typing import Dict, Optional
 
 _logger = logging.getLogger(__name__)
 
@@ -528,7 +529,7 @@ def translate_cds(
     full_codons: bool = True,
     ter_symbol: str = "*",
     translation_table: TranslationTable = TranslationTable.standard,
-    exception_map: dict[int, str] | None = None,
+    exception_map: Optional[Dict[int, str]] = None,
     starts_at_first_codon: bool = False,
 ) -> str | None:
     """Translates a DNA or RNA sequence into a single-letter amino acid sequence.
